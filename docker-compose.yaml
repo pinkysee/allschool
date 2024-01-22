@@ -1,6 +1,4 @@
-version: '3.1'
-
-services: 
+services:
   db:
     image: postgres:15
     restart: always
@@ -12,6 +10,7 @@ services:
       - 5432:5432
     volumes: 
       - db:/var/lib/postgresql/data
+    mem_limit: 300m
 
   schoolserver:
     build: ./schoolserver
@@ -20,6 +19,7 @@ services:
     depends_on:
       - db
     restart: always
+    mem_limit: 100m
 
   schoolweb:
     build: ./schoolweb-osn
@@ -29,6 +29,4 @@ services:
       - db
       - schoolserver
     restart: always
-
-volumes:
-  db:
+    mem_limit: 100m
