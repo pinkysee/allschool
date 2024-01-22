@@ -31,7 +31,7 @@ services:
       - db
       - schoolserver
     restart: always
-    mem_limit: 100m
+    mem_limit: 50m
 
 volumes:
   db:
