@@ -1,0 +1,23 @@
+name: Deployment
+
+on:
+  push:
+
+jobs:
+  deployment:
+    strategy:
+      matrix:
+        node-version: [14, 16]
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Get repository code
+        uses: actions/checkout@v2
+      - name: Install NodeJs
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install deps
+        run: npm install
+      - name: Build App
+        run: npm run build

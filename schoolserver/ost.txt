@@ -1,0 +1,432 @@
+package getnews_test
+
+import (
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	repository "github.com/PINKYSEE/schoolserver/internal/app/handler"
+	serveces_repository "github.com/PINKYSEE/schoolserver/internal/app/services"
+	mock_repository "github.com/PINKYSEE/schoolserver/internal/app/services/mocks"
+	"github.com/PINKYSEE/schoolserver/internal/model"
+	"github.com/golang/mock/gomock"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestGetNews(t *testing.T) {
+	type MockBehavior func(s *mock_repository.MockGetnews, nms []model.News)
+	testTable := []struct {
+		testname     string
+		MockBehavior MockBehavior
+		Mockreturn   []model.News
+		statusoutput int
+		answeroutput string
+	}{
+		{
+			testname: "ok",
+			MockBehavior: func(s *mock_repository.MockGetnews, nms []model.News) {
+				s.EXPECT().GetNews().Return(nms, nil)
+			},
+			Mockreturn: []model.News{
+				{
+					Id:         1,
+					Title:      "fdsa",
+					Text:       "fdasf",
+					Preview:    "dfsaf",
+					Created_at: "2023-08-23T17:09:41.99441Z",
+				},
+				{
+					Id:         2,
+					Title:      "fdsa",
+					Text:       "fdasf",
+					Preview:    "dfsaf",
+					Created_at: "2023-08-23T17:09:41.99441Z",
+				},
+				{
+					Id:         3,
+					Title:      "fdsa",
+					Text:       "fdasf",
+					Preview:    "dfsaf",
+					Created_at: "2023-08-23T17:09:41.99441Z",
+				},
+				{
+					Id:         4,
+					Title:      "fdsa",
+					Text:       "fdasf",
+					Preview:    "dfsaf",
+					Created_at: "2023-08-23T17:09:41.99441Z",
+				},
+				{
+					Id:         5,
+					Title:      "fdsa",
+					Text:       "fdasf",
+					Preview:    "dfsaf",
+					Created_at: "2023-08-23T17:09:41.99441Z",
+				},
+				{
+					Id:         6,
+					Title:      "fdsa",
+					Text:       "fdasf",
+					Preview:    "dfsaf",
+					Created_at: "2023-08-23T17:09:41.99441Z",
+				},
+				{
+					Id:         7,
+					Title:      "fdsa",
+					Text:       "fdasf",
+					Preview:    "dfsaf",
+					Created_at: "2023-08-23T17:09:41.99441Z",
+				},
+				{
+					Id:         8,
+					Title:      "fdsa",
+					Text:       "fdasf",
+					Preview:    "dfsaf",
+					Created_at: "2023-08-23T17:09:41.99441Z",
+				},
+				{
+					Id:         9,
+					Title:      "fdsa",
+					Text:       "fdasf",
+					Preview:    "dfsaf",
+					Created_at: "2023-08-23T17:09:41.99441Z",
+				},
+				{
+					Id:         10,
+					Title:      "fdsa",
+					Text:       "fdasf",
+					Preview:    "dfsaf",
+					Created_at: "2023-08-23T17:09:41.99441Z",
+				},
+			},
+			statusoutput: 200,
+			answeroutput: `[
+				{"Id":1,"Title":"fdsa","Text":"fdasf","Preview":"dfsaf", "Created_at": "2023-08-23T17:09:41.99441Z"},
+				{"Id":2,"Title":"fdsa","Text":"fdasf","Preview":"dfsaf", "Created_at": "2023-08-23T17:09:41.99441Z"},
+				{"Id":3,"Title":"fdsa","Text":"fdasf","Preview":"dfsaf", "Created_at": "2023-08-23T17:09:41.99441Z"},
+				{"Id":4,"Title":"fdsa","Text":"fdasf","Preview":"dfsaf", "Created_at": "2023-08-23T17:09:41.99441Z"},
+				{"Id":5,"Title":"fdsa","Text":"fdasf","Preview":"dfsaf", "Created_at": "2023-08-23T17:09:41.99441Z"},
+				{"Id":6,"Title":"fdsa","Text":"fdasf","Preview":"dfsaf", "Created_at": "2023-08-23T17:09:41.99441Z"},
+				{"Id":7,"Title":"fdsa","Text":"fdasf","Preview":"dfsaf", "Created_at": "2023-08-23T17:09:41.99441Z"},
+				{"Id":8,"Title":"fdsa","Text":"fdasf","Preview":"dfsaf", "Created_at": "2023-08-23T17:09:41.99441Z"},
+				{"Id":9,"Title":"fdsa","Text":"fdasf","Preview":"dfsaf", "Created_at": "2023-08-23T17:09:41.99441Z"},
+				{"Id":10,"Title":"fdsa","Text":"fdasf","Preview":"dfsaf", "Created_at": "2023-08-23T17:09:41.99441Z"}
+			]`,
+		},
+		{
+			testname: "Err services",
+			MockBehavior: func(s *mock_repository.MockGetnews, nms []model.News) {
+				s.EXPECT().GetNews().Return(nil, errors.New("no news"))
+			},
+			Mockreturn:   []model.News{},
+			statusoutput: http.StatusBadGateway,
+			answeroutput: `{"Message": "Bad Gateway"}`,
+		},
+	}
+	for _, testcase := range testTable {
+		t.Run(testcase.testname, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			getnewsMock := mock_repository.NewMockGetnews(ctrl)
+			testcase.MockBehavior(getnewsMock, testcase.Mockreturn)
+			services := &serveces_repository.Services{Getnews: getnewsMock}
+			handler := repository.NewHandler(services)
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodPost, "/", nil)
+
+			rec := httptest.NewRecorder()
+			cs := e.NewContext(req, rec)
+			err := handler.GetNews(cs)
+			assert.NoError(t, err)
+			// Check response code
+			assert.Equal(t, testcase.statusoutput, rec.Code)
+			// Check response content
+			assert.JSONEq(t, testcase.answeroutput, rec.Body.String())
+		})
+	}
+}
+package handler_test
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	repository "github.com/PINKYSEE/schoolserver/internal/app/handler"
+	serveces "github.com/PINKYSEE/schoolserver/internal/app/services"
+	mock_repository "github.com/PINKYSEE/schoolserver/internal/app/services/mocks"
+	"github.com/PINKYSEE/schoolserver/internal/model"
+	"github.com/golang/mock/gomock"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestAuth(t *testing.T) {
+	type MockBehavior func(s *mock_repository.MockAuthorization, user *model.User)
+	testTable := []struct {
+		testname     string
+		form         *strings.Reader
+		usermodel    model.User
+		MockBehavior MockBehavior
+		statusoutput int
+		answeroutput string
+	}{
+		{
+			testname: "OK",
+			form:     strings.NewReader("Login=root&Password=root"),
+			usermodel: model.User{
+				ID:        0,
+				Name:      "Test",
+				Login:     "root",
+				Password:  "root",
+				Role:      "test",
+				Classname: "TEST",
+			},
+			MockBehavior: func(s *mock_repository.MockAuthorization, user *model.User) {
+				s.EXPECT().GenerateJWT(gomock.Any()).Return("djfkljfasdlkjfsadjkljfdlskajfklad", nil)
+			},
+			statusoutput: 200,
+			answeroutput: `{"Token":"djfkljfasdlkjfsadjkljfdlskajfklad"}`,
+		},
+		{
+			testname: "Nopasswordinput",
+			form:     strings.NewReader("Login=root"),
+			usermodel: model.User{
+				ID:        0,
+				Name:      "Test",
+				Login:     "root",
+				Password:  "root",
+				Role:      "test",
+				Classname: "TEST",
+			},
+			MockBehavior: func(s *mock_repository.MockAuthorization, user *model.User) {
+
+			},
+			statusoutput: 400,
+			answeroutput: `{"Token":"Bad Request"}`,
+		},
+		{
+			testname: "Nologininput",
+			form:     strings.NewReader("Password=root"),
+			usermodel: model.User{
+				ID:        0,
+				Name:      "Test",
+				Login:     "root",
+				Password:  "root",
+				Role:      "test",
+				Classname: "TEST",
+			},
+			MockBehavior: func(s *mock_repository.MockAuthorization, user *model.User) {
+
+			},
+			statusoutput: 400,
+			answeroutput: `{"Token":"Bad Request"}`,
+		},
+		{
+			testname: "Noinput",
+			form:     strings.NewReader(""),
+			usermodel: model.User{
+				ID:        0,
+				Name:      "Test",
+				Login:     "root",
+				Password:  "root",
+				Role:      "test",
+				Classname: "TEST",
+			},
+			MockBehavior: func(s *mock_repository.MockAuthorization, user *model.User) {
+
+			},
+			statusoutput: 400,
+			answeroutput: `{"Token":"Bad Request"}`,
+		},
+		{
+			testname: "UnRegistered",
+			form:     strings.NewReader("Login=root&Password=root"),
+			usermodel: model.User{
+				ID:        0,
+				Name:      "Test",
+				Login:     "root",
+				Password:  "root",
+				Role:      "test",
+				Classname: "TEST",
+			},
+			MockBehavior: func(s *mock_repository.MockAuthorization, user *model.User) {
+				s.EXPECT().GenerateJWT(gomock.Any()).Return("", nil)
+			},
+			statusoutput: 401,
+			answeroutput: `{"Token":"UnRegistered"}`,
+		},
+	}
+
+	for _, testcase := range testTable {
+		t.Run(testcase.testname, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			generatedJWT := mock_repository.NewMockAuthorization(ctrl)
+
+			testcase.MockBehavior(generatedJWT, &testcase.usermodel)
+			services := &serveces.Services{Authorization: generatedJWT}
+			handler := repository.NewHandler(services)
+			e := echo.New()
+
+			req := httptest.NewRequest(http.MethodPost, "/auth", testcase.form)
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			rec := httptest.NewRecorder()
+			cs := e.NewContext(req, rec)
+			err := handler.Auth(cs)
+			assert.NoError(t, err)
+
+			// Check response code
+			assert.Equal(t, testcase.statusoutput, rec.Code)
+
+			// Check response content
+			assert.JSONEq(t, testcase.answeroutput, rec.Body.String())
+		})
+	}
+}
+
+
+
+////////
+package handler_test
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	repository "github.com/PINKYSEE/schoolserver/internal/app/handler"
+	serveces "github.com/PINKYSEE/schoolserver/internal/app/services"
+	mock_repository "github.com/PINKYSEE/schoolserver/internal/app/services/mocks"
+	"github.com/PINKYSEE/schoolserver/internal/model"
+	"github.com/golang/mock/gomock"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestAuth(t *testing.T) {
+	type MockBehavior func(s *mock_repository.MockAuthorization, user *model.User)
+	testTable := []struct {
+		testname     string
+		form         *strings.Reader
+		usermodel    model.User
+		MockBehavior MockBehavior
+		statusoutput int
+		answeroutput string
+	}{
+		{
+			testname: "OK",
+			form:     strings.NewReader("Login=root&Password=root"),
+			usermodel: model.User{
+				ID:        0,
+				Name:      "Test",
+				Login:     "root",
+				Password:  "root",
+				Role:      "test",
+				Classname: "TEST",
+			},
+			MockBehavior: func(s *mock_repository.MockAuthorization, user *model.User) {
+				s.EXPECT().GenerateJWT(gomock.Any()).Return("djfkljfasdlkjfsadjkljfdlskajfklad", nil)
+			},
+			statusoutput: 200,
+			answeroutput: `{"Token":"djfkljfasdlkjfsadjkljfdlskajfklad"}`,
+		},
+		{
+			testname: "Nopasswordinput",
+			form:     strings.NewReader("Login=root"),
+			usermodel: model.User{
+				ID:        0,
+				Name:      "Test",
+				Login:     "root",
+				Password:  "root",
+				Role:      "test",
+				Classname: "TEST",
+			},
+			MockBehavior: func(s *mock_repository.MockAuthorization, user *model.User) {
+
+			},
+			statusoutput: 400,
+			answeroutput: `{"Token":"Bad Request"}`,
+		},
+		{
+			testname: "Nologininput",
+			form:     strings.NewReader("Password=root"),
+			usermodel: model.User{
+				ID:        0,
+				Name:      "Test",
+				Login:     "root",
+				Password:  "root",
+				Role:      "test",
+				Classname: "TEST",
+			},
+			MockBehavior: func(s *mock_repository.MockAuthorization, user *model.User) {
+
+			},
+			statusoutput: 400,
+			answeroutput: `{"Token":"Bad Request"}`,
+		},
+		{
+			testname: "Noinput",
+			form:     strings.NewReader(""),
+			usermodel: model.User{
+				ID:        0,
+				Name:      "Test",
+				Login:     "root",
+				Password:  "root",
+				Role:      "test",
+				Classname: "TEST",
+			},
+			MockBehavior: func(s *mock_repository.MockAuthorization, user *model.User) {
+
+			},
+			statusoutput: 400,
+			answeroutput: `{"Token":"Bad Request"}`,
+		},
+		{
+			testname: "UnRegistered",
+			form:     strings.NewReader("Login=root&Password=root"),
+			usermodel: model.User{
+				ID:        0,
+				Name:      "Test",
+				Login:     "root",
+				Password:  "root",
+				Role:      "test",
+				Classname: "TEST",
+			},
+			MockBehavior: func(s *mock_repository.MockAuthorization, user *model.User) {
+				s.EXPECT().GenerateJWT(gomock.Any()).Return("", nil)
+			},
+			statusoutput: 401,
+			answeroutput: `{"Token":"UnRegistered"}`,
+		},
+	}
+
+	for _, testcase := range testTable {
+		t.Run(testcase.testname, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			generatedJWT := mock_repository.NewMockAuthorization(ctrl)
+
+			testcase.MockBehavior(generatedJWT, &testcase.usermodel)
+			services := &serveces.Services{Authorization: generatedJWT}
+			handler := repository.NewHandler(services)
+			e := echo.New()
+
+			req := httptest.NewRequest(http.MethodPost, "/auth", testcase.form)
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			rec := httptest.NewRecorder()
+			cs := e.NewContext(req, rec)
+			err := handler.Auth(cs)
+			assert.NoError(t, err)
+
+			// Check response code
+			assert.Equal(t, testcase.statusoutput, rec.Code)
+
+			// Check response content
+			assert.JSONEq(t, testcase.answeroutput, rec.Body.String())
+		})
+	}
+}

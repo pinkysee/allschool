@@ -1,0 +1,22 @@
+body {
+    font-family: montserrat;
+    background-color: #171717;
+    margin: 0;
+}
+@font-face {
+    font-family: "montserrat";
+    src: url("./Montserrat-VariableFont_wght.ttf") format("truetype");
+    font-style: normal;
+    font-weight: normal;
+    
+}
+:root {
+    --padding-bar: 10px;
+    --apadding: 10px;
+    --bgcolorhover: #2c2c2c;
+    --otbgcolor:  #212121;
+    --dopbgcolor: #353535;
+    --bgcolordefault: #171717;
+    --textcolor: #fff;
+    --bordercolor: #171717;
+}
