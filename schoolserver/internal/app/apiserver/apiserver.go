@@ -45,7 +45,7 @@ func (s *apiserver) configRouter() {
 	logrus.Info("ff ", s)
 	s.router.Static("/docs", "../../internal/app/file/docs")
 	s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000"},                    // Разрешенные источники
+		AllowOrigins: []string{"http://194.87.232.129:3000"},               // Разрешенные источники
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE}, // Разрешенные методы
 	}))
 	s.router.GET("/hello", hello)

@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   runtimeConfig: {
     public: {
-      API_URL: process.env.API_URL || "http://193.124.113.96:8080",
+      API_URL: process.env.API_URL || "http://194.87.232.129:8080",
  
     },
   },
